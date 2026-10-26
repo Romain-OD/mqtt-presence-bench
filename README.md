@@ -24,11 +24,13 @@ The sensor connects to the broker through `Cable`, a small TCP relay on `127.0.0
 
 ### Scenarios
 
-Clear retained state between runs:
+One command per scenario, agent and sensor in the same console (this is what the video shows):
 
 ```powershell
-docker compose exec mosquitto sh -c "mosquitto_pub -t line3/temp -r -n; mosquitto_pub -t line3/sensor/status -r -n"
+./demo.ps1 trap    # or: kill | quit | cut
 ```
+
+Running by hand? Clear retained state between runs with `dotnet run -- reset` (it publishes an empty retained payload to both topics).
 
 | Scenario | Command | What the agent sees (Mosquitto 2.1.2) |
 |---|---|---|

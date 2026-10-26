@@ -18,8 +18,19 @@ await (opt.Mode switch
 {
     "sensor" => RunSensor(),
     "agent" => RunAgent(),
-    _ => throw new ArgumentException("usage: sensor | agent"),
+    "reset" => Reset(),
+    _ => throw new ArgumentException("usage: sensor | agent | reset"),
 });
+
+// An empty retained payload deletes the retained message on that topic.
+async Task Reset()
+{
+    using var client = factory.CreateMqttClient();
+    await client.ConnectAsync(new MqttClientOptionsBuilder().WithTcpServer(opt.Broker, 1883).Build());
+    await Publish(client, "line3/temp", "");
+    await Publish(client, "line3/sensor/status", "");
+    await client.DisconnectAsync();
+}
 
 async Task RunSensor()
 {
@@ -154,5 +165,8 @@ string? NextAction()
     return null;
 }
 
-static void Log(string who, string text) =>
-    Console.WriteLine($"{DateTime.Now:HH:mm:ss.f}  {who,-6} | {text}");
+static void Log(string who, string text)
+{
+    var color = text.StartsWith(">>") ? (text.EndsWith("All good.") ? "92" : "91") : who == "agent" ? "96" : "93";
+    Console.WriteLine($"\e[{color}m{DateTime.Now:HH:mm:ss.f}  {who,-6} | {text}\e[0m");
+}
